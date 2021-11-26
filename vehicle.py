@@ -65,5 +65,5 @@ class Vehicle(Agent):
     def slow(self, v):
         self.v_max = v
 
-    def unslow(self, v):
+    def unslow(self):
         self.v_max = self._v_max
