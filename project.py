@@ -1,4 +1,7 @@
-from mesa import Agent, Model, time
+from mesa import Agent, Model
+from mesa.time import RandomActivation
+from mesa.space import MultiGrid
+from mesa.datacollection import DataCollector
 import math
 import random
 
@@ -180,4 +183,5 @@ class RandomActivationSchedule(object):
 def main():
     model = TrafficModel(100, 100, 1)
     model.generate_model(100, 100, 1, 1, 1)
-    model.step()
+    model.run_model(100)
+    print(model.datacollector.get_model_vars_dataframe())
