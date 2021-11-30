@@ -1,3 +1,4 @@
+from numpy.lib.function_base import select
 from road import Road
 from vehicle import Vehicle
 from traffic_signal import TrafficSignal
@@ -8,6 +9,8 @@ from mesa.time import RandomActivation
 from mesa.datacollection import DataCollector
 import math
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
 class Simulation(Model):
     """A model with some number of agents."""
@@ -44,10 +47,22 @@ class Simulation(Model):
         # self.roads.append(Road(0, (0, 0), (100, 100), self))
         # self.roads.append(Road(1, (0, 0), (100, 0), self))
         # self.roads.append(Road(2, (0, 0), (0, 100), self))
-        self.roads.append(Road(212, (0, 0), (0, -100), self))
-        self.roads.append(Road(3452, (0, -100), (-100, -100), self))
-        self.roads.append(Road(34555, (-100, -100), (-100, 0), self))
-        self.roads.append(Road(3453455, (-100, 0), (0, 0), self))
+        self.roads.append(Road(1, (-248.2, -79), (5.8, -79), self))
+        self.roads.append(Road(2, (5.8, -79), (46.7, -98.8), self))
+        self.roads.append(Road(3, (46.7, -98.8), (140,1. -98.8), self))
+        self.roads.append(Road(4, (140, -98.8), (179.2, -132.8), self)) # curve
+        self.roads.append(Road(5, (179.2, -132.8), (172.9, -343.2), self))
+        self.roads.append(Road(6, (172.9, -343.2), (139.9, -378.6), self)) # curve
+        self.roads.append(Road(7, (139.9, -378.6), (-259, -378.6), self))
+        # fork
+        self.roads.append(Road(8, (-259, -378.6), (-285.5, -411.5), self))
+        self.roads.append(Road(9, (-259, -378.6), (-285.5, -341.5), self))
+        
+        self.roads.append(Road(10, (-285.5, -411.5), (-285.5, -341.5), self))
+        self.roads.append(Road(11, (-285.5, -411.5), (-319.3, -447.1), self)) # curve
+        self.roads.append(Road(12, (-355.9, -404.9), (-355.9, -377.7), self)) # curve
+        self.roads.append(Road(13, (-355.9, -404.9), (-355.9, -377.7), self))
+
         
     # def generate_traffic_signals(self, num_traffic_lights):
     #     for i in range(num_traffic_lights):
@@ -55,7 +70,7 @@ class Simulation(Model):
 
     def generate_vehicle(self, num_vehicles):
         for i in range(num_vehicles):
-            self.roads[0].vehicles.append(Vehicle(i, self, {"path": [212, 3452, 34555, 3453455]}))
+            self.roads[0].vehicles.append(Vehicle(i, self, {"path": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}))
     
     def generate_schedule(self):
         self.schedule = RandomActivation(self)
@@ -120,18 +135,34 @@ sim = Simulation(
         "speed_multiplier": 1,
         "num_roads": 1,
         # "num_traffic_lights": 1,
-        "num_vehicles": 1
+        "num_vehicles": 2
     }
 )
 
 sim.generate_model(
     num_roads=1,
-    num_vehicles=1
+    num_vehicles=2
 )
 
-for i in range(1500):
+for i in range(10000):
     sim.step()
-    print(sim.vehicle_path())
+    # print(sim.vehicle_path())
+
+# plot route
+sim.datacollector.collect(sim)
+data = sim.datacollector.get_model_vars_dataframe()
+data.to_json("data.json")
+x = []
+y = []
+for i in range(len(data)):
+    try:
+        x.append(data.iloc[i]["Vehicle path"][0][1])
+        y.append(data.iloc[i]["Vehicle path"][0][2])
+    except:
+        pass
+
+plt.plot(x, y)
+plt.show()
 
 #todo: calculate the optimal path of the vehicle
 #todo: save position of the vehicle in the road
