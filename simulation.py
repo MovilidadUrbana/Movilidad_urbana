@@ -41,12 +41,13 @@ class Simulation(Model):
             self.sin_lookup_table[i] = math.sin(math.radians(i))
     
     def generate_roads(self, num_roads):
-        for i in range(num_roads):
-            x_0 = random.randint(0, self.width)
-            y_0 = random.randint(0, self.height)
-            x_1 = random.randint(0, self.width)
-            y_1 = random.randint(0, self.height)
-            self.roads.append(Road(i, (x_0, y_0), (x_1, y_1), self))
+        # self.roads.append(Road(0, (0, 0), (100, 100), self))
+        # self.roads.append(Road(1, (0, 0), (100, 0), self))
+        # self.roads.append(Road(2, (0, 0), (0, 100), self))
+        self.roads.append(Road(212, (0, 0), (0, -100), self))
+        self.roads.append(Road(3452, (0, -100), (-100, -100), self))
+        self.roads.append(Road(34555, (-100, -100), (-100, 0), self))
+        self.roads.append(Road(3453455, (-100, 0), (0, 0), self))
         
     # def generate_traffic_signals(self, num_traffic_lights):
     #     for i in range(num_traffic_lights):
@@ -54,27 +55,34 @@ class Simulation(Model):
 
     def generate_vehicle(self, num_vehicles):
         for i in range(num_vehicles):
-            self.roads[0].vehicles.append(Vehicle(i, self))
+            self.roads[0].vehicles.append(Vehicle(i, self, {"path": [212, 3452, 34555, 3453455]}))
     
     def generate_schedule(self):
         self.schedule = RandomActivation(self)
         # for agent in self.traffic_lights:
         #     self.schedule.add(agent)
-        for agent in self.roads[0].vehicles:
-            self.schedule.add(agent)
+        for road in self.roads:
+            for agent in road.vehicles:
+                self.schedule.add(agent)
     
     def generate_agents(self, num_roads, num_vehicles):
         self.generate_roads(num_roads)
         self.generate_vehicle(num_vehicles)
         self.generate_schedule()
 
-    def generate_model(self, width, height, speed_multiplier, num_roads, num_vehicles):
+    def generate_model(self, num_roads, num_vehicles):
         self.generate_cos_sin_lookup_table()
         self.generate_agents(num_roads, num_vehicles)
         self.generate_schedule()
 
     def vehicle_path(self):
-        return [car.path for car in self.roads[0].vehicles]
+        vehicle_positions = []
+        for road in self.roads:
+            for car in road.vehicles:
+                x = road.start[0] + road.angle_cos * car.x
+                y = road.start[1] + road.angle_sin * car.x
+                vehicle_positions.append((car.unique_id, x, y))
+        return vehicle_positions
 
     def step(self):
         for road in self.roads:
@@ -93,7 +101,11 @@ class Simulation(Model):
                     new_vehicle.x = 0
                     # Add it to the next road
                     next_road_index = vehicle.path[vehicle.current_road_index]
-                    self.roads[next_road_index].vehicles.append(new_vehicle)
+                    for road_t in self.roads:
+                        if road_t.unique_id == next_road_index:
+                            road_t.vehicles.append(new_vehicle)
+                            break
+
                 # In all cases, remove it from its road
                 road.vehicles.popleft() 
             
@@ -113,13 +125,13 @@ sim = Simulation(
 )
 
 sim.generate_model(
-    width=100,
-    height=100,
-    speed_multiplier=1,
     num_roads=1,
     num_vehicles=1
 )
 
-for i in range(10):
+for i in range(1500):
     sim.step()
     print(sim.vehicle_path())
+
+#todo: calculate the optimal path of the vehicle
+#todo: save position of the vehicle in the road
