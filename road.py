@@ -38,10 +38,9 @@ class Road(Agent):
         n = len(self.vehicles)
 
         if n > 0:
-            self.vehicles[0].step(None, dt)
+            self.vehicles[0].step(dt)
             for i in range(1, n):
-                lead = self.vehicles[i-1]
-                self.vehicles[i].step(lead, dt)
+                self.vehicles[i].step(dt)
             
             if self.traffic_signal_state:
                 self.vehicles[0].unstop()

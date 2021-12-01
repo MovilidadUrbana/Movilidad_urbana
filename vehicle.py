@@ -35,22 +35,15 @@ class Vehicle(Agent):
         self.sqrt_ab = 2 * np.sqrt(self.a_max * self.b_max)
         self._v_max = self.v_max
 
-    def step(self, lead, dt):
+    def step(self, dt):
         if self.v + self.a*dt < 0:
             self.x -= 1/2*self.v*self.v/self.a
             self.v = 0
         else:
             self.v += self.a*dt
             self.x += self.v*dt + self.a*dt*dt/2
-        
         # Update acceleration
         alpha = 0
-        if lead:
-            delta_x = lead.x - self.x - lead.l
-            delta_v = self.v - lead.v
-
-            alpha = (self.s0 + max(0, self.T*self.v + delta_v*self.v/self.sqrt_ab)) / delta_x
-
         self.a = self.a_max * (1-(self.v/self.v_max)**4 - alpha**2)
 
         if self.stopped: 
